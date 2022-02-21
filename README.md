@@ -2,9 +2,9 @@
 
 Implements symfony cache component in symfony
 
-| Repository Branch | cache       Version | Symfony Version | PHP Version     |
-|-------------------|---------------------|-----------------|-----------------|
-| [4.x][1]          | `4.x`               | `4.4.x`         | `7.4` or higher |
+| Repository Branch | Cache Version | Symfony Version | PHP Version     |
+|-------------------|---------------|-----------------|-----------------|
+| [4.x][1]          | `4.x`         | `4.4.x`         | `7.4` or higher |
 
 
 Read [The Cache Component Docs](https://symfony.com/doc/current/components/cache.html)
