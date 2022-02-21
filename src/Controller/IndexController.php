@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Adapter\MemcachedAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Symfony\Component\Cache\Exception\CacheException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,9 +19,7 @@ class IndexController extends AbstractController
      */
     public function index(): Response
     {
-        return $this->render('index/index.html.twig', [
-            'controller_name' => 'IndexController',
-        ]);
+        return $this->render('index/index.html.twig', []);
     }
 
     /**
@@ -54,7 +55,8 @@ class IndexController extends AbstractController
      */
     public function cacheRedisAction()
     {
-        $client = RedisAdapter::createConnection('redis://172.23.0.2:6379');
+        $redisUrl = $this->getParameter('cache')['redis'];
+        $client = RedisAdapter::createConnection($redisUrl);
         $cache = new RedisAdapter($client, $namespace = '', $defaultLifetime = 0);
         $cacheKey = '123';
         $cachedItem = $cache->getItem($cacheKey);
@@ -65,6 +67,31 @@ class IndexController extends AbstractController
         }
 
         return $this->render('default/index.html.twig', [
+            'cache' => [
+                'hit' => $cachedItem->isHit(),
+            ],
+        ]);
+    }
+
+
+    /**
+     * @Route("/memcached", name="cache_memcached")
+     *
+     * @throws CacheException|InvalidArgumentException
+     */
+    public function memcachedAction(): Response
+    {
+        $client = MemcachedAdapter::createConnection('memcached://localhost');
+        $cache = new MemcachedAdapter($client);
+        $cacheKey = md5('123');
+        $cachedItem = $cache->getItem($cacheKey);
+
+        if (false === $cachedItem->isHit()) {
+            $cachedItem->set($cacheKey, 'some value');
+            $cache->save($cachedItem);
+        }
+
+        return $this->render('cache/memcached.html.twig', [
             'cache' => [
                 'hit' => $cachedItem->isHit(),
             ],
